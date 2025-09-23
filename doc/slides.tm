@@ -145,10 +145,19 @@
       <\shell-code>
         mpicc -show
       </shell-code>
+
+      You can also compile without the wrappers like this
+
+      <\shell-code>
+        cc -I/opt/spack/include -o hello hello.c -lmpi -L/opt/spack/lib
+      </shell-code>
+
+      Here, I assumed that mpi is installed in directory
+      <verbatim|/opt/spack>.
     </slide>
 
     <\slide>
-      <chapter*|integrate1: blocking send/recv>
+      <chapter*|integrate1: blocking version>
 
       Compute <math|I=<big|int><rsub|a><rsup|b>f<around*|(|x|)>\<mathd\>x>
       using <math|R> ranks; partition the domain
@@ -179,15 +188,78 @@
     </slide>
 
     <\slide>
-      <chapter*|integrate2>
+      <chapter*|integrate2: non-blocking version>
+
+      Compile
+
+      <\shell-code>
+        mpif90 -o integrate2 integrate2.f90
+
+        mpicc \ -o integrate2 integrate2.c
+      </shell-code>
+
+      Run
+
+      <\shell-code>
+        mpirun -np 4 integrate2
+      </shell-code>
     </slide>
 
     <\slide>
-      <chapter*|integrate3>
+      <chapter*|integrate3: using reduction>
+
+      Reduction operations
+
+      <\itemize>
+        <item>sum the elements of a vector: <verbatim|MPI_SUM>
+
+        <item>find the min/max of a vector: <verbatim|MPI_MIN>,
+        <verbatim|MPI_MAX>
+      </itemize>
+
+      Compile
+
+      <\shell-code>
+        mpif90 -o integrate3 integrate3.f90
+
+        mpicc \ -o integrate3 integrate3.c
+      </shell-code>
+
+      Run
+
+      <\shell-code>
+        mpirun -np 4 integrate3
+      </shell-code>
+
+      See <hlink|MPI_Reduce|https://rookiehpc.org/mpi/docs/mpi_reduce/index.html>
+      and <hlink|MPI_Allreduce|https://rookiehpc.org/mpi/docs/mpi_allreduce/index.html>
     </slide>
 
     <\slide>
       <chapter*|Linear advection>
+
+      Solve linear advection equation with periodic boundary condition
+
+      <\equation*>
+        u<rsub|t>+a u<rsub|x>=0,<space|2em>x\<in\><around*|[|xmin,xmax|]>
+      </equation*>
+
+      Make a grid of <math|n> points with spacing
+      <math|\<Delta\>x=<frac|xmax-xmin|n>> and such that
+      <math|x<rsub|0>=xmin> and <math|x<rsub|n-1>=xmax-\<Delta\>x>.
+
+      Note that <math|x<rsub|n>=xmax> but do you need this grid point since
+      the solution by periodicity is <math|u<rsub|n>=u<rsub|0>>.
+
+      Lax-Wendroff scheme: with <math|\<nu\>=<frac|a \<Delta\>t|\<Delta\>x>>,
+      and for <math|j=0,1,\<ldots\>,n-1>
+
+      <\equation*>
+        u<rsub|j><rsup|n+1>=u<rsub|j><rsup|n>-<frac|\<nu\>|2><around*|(|u<rsub|j+1><rsup|n>-u<rsub|j-1><rsup|n>|)>+<frac|\<nu\><rsup|2>|2><around*|(|u<rsub|j-1><rsup|n>-2u<rsub|j><rsup|n>+u<rsub|j+1><rsup|n>|)>
+      </equation*>
+
+      To update solution <math|u<rsub|j>> we need the stencil values
+      <math|<around*|{|j-1,j,j+1|}>>.
     </slide>
 
     <\slide>
@@ -215,6 +287,244 @@
 
         <slink|https://petsc.org/release/tutorials>
       </itemize>
+    </slide>
+
+    <\slide>
+      <chapter*|parallel/petsc/hello.c>
+
+      <\shell-code>
+        make hello
+
+        ./hello -help intro
+
+        ./hello -help
+
+        ./hello
+
+        mpirun -n 4 ./hello
+
+        mpiexec -n 4 ./hello
+      </shell-code>
+    </slide>
+
+    <\slide>
+      <chapter*|Variable types>
+
+      <\itemize>
+        <item><hlink|PetscInt|https://petsc.org/release/docs/manualpages/Sys/PetscInt.html>:
+        usually 32-bit integer, can be configured for 64-bit integer while
+        compiling Petsc, which is needed for large meshes
+
+        <item><hlink|PetscErrorCode|https://petsc.org/release/docs/manualpages/Sys/PetscErrorCode>:
+        integer return type from Petsc functions
+
+        <item><hlink|PetscMPIInt|https://petsc.org/release/docs/manualpages/Sys/PetscMPIInt>:
+        use this to pass to MPI functions, e.g., to get rank, size, etc.
+
+        <item><hlink|PetscReal|https://petsc.org/release/docs/manualpages/Sys/PetscReal>:
+        usually real double
+
+        <item><hlink|PetscScalar|https://petsc.org/release/docs/manualpages/Sys/PetscScalar>:
+        usually real double, can be complex double also. It is used for the
+        scalar field in a vector space and for entries of vectors and
+        matrices.
+      </itemize>
+    </slide>
+
+    <\slide>
+      <chapter*|Printing>
+
+      <\itemize>
+        <item><hlink|PetscPrintf|https://petsc.org/release/manualpages/Sys/PetscPrintf/>:
+        similar to <verbatim|printf> in C, not collective
+
+        <item><verbatim|PetscPrintf(PETSC_COMM_WORLD,format,variables)>
+
+        prints only on rank=0 process
+
+        <item><verbatim|PetscPrintf(PETSC_COMM_SELF,format,variables)>
+
+        prints on every rank
+
+        <item>By default
+
+        <verbatim|PETSC_COMM_WORLD = MPI_COMM_WORLD>
+
+        <verbatim|PETSC_COMM_SELF = MPI_COMM_SELF> (always)
+
+        <item><hlink|PetscFPrintf|https://petsc.org/release/manualpages/Sys/PetscFPrintf/>:
+        Prints to a file
+      </itemize>
+    </slide>
+
+    <\slide>
+      <chapter*|p4pdes/c/ch1/e.c>
+
+      Compute the value of <math|\<mathe\>> in parallel
+
+      <\equation*>
+        \<mathe\>=<big|sum><rsub|n=0><rsup|\<infty\>><frac|1|n!>
+      </equation*>
+
+      Each rank computes one term in the sum. If total ranks = <math|r>, we
+      compute
+
+      <\equation*>
+        \<mathe\>\<approx\><big|sum><rsub|n=0><rsup|r-1><frac|1|n!>=1+1+<frac|1|2!>+<frac|1|3!>+\<ldots\>+<frac|1|<around*|(|r-1|)>!>
+      </equation*>
+
+      Rank=<math|n> computes the value <math|<frac|1|n!>>. Accuracy increases
+      as number of ranks increase.
+    </slide>
+
+    <\slide>
+      <chapter*|Creating DMDA>
+
+      <\itemize>
+        <item><hlink|DMDACreate1D|https://petsc.org/release/docs/manualpages/DMDA/DMDACreate1d.html>
+
+        <item><hlink|DMDACreate2D|https://petsc.org/release/docs/manualpages/DMDA/DMDACreate2d.html>
+
+        <item><hlink|DMDACreate3D|https://petsc.org/release/docs/manualpages/DMDA/DMDACreate3d.html>
+
+        <item><hlink|DMBoundaryType|https://petsc.org/release/docs/manualpages/DM/DMBoundaryType.html>
+
+        <item><hlink|DMDAStencilType|https://petsc.org/release/docs/manualpages/DMDA/DMDAStencilType.html>
+      </itemize>
+    </slide>
+
+    <\slide>
+      <chapter*|DMDA info>
+
+      <\itemize>
+        <item><hlink|DMDAGetInfo|https://petsc.org/release/docs/manualpages/DMDA/DMDAGetInfo>:
+        get full mesh sizes
+
+        <item><hlink|DMDAGetCorners|https://petsc.org/release/docs/manualpages/DMDA/DMDAGetCorners>:
+        get range of locally owned grid
+
+        <item><hlink|DMDAGetGhostCorners|https://petsc.org/release/docs/manualpages/DMDA/DMDAGetGhostCorners>:
+        get range of local grid including ghost points
+
+        <item>All of above info can be obtained together using:
+
+        <hlink|DMDALocalInfo|https://petsc.org/release/docs/manualpages/DMDA/DMDALocalInfo>
+        and <hlink|DMDAGetLocalInfo|https://petsc.org/release/docs/manualpages/DMDA/DMDAGetLocalInfo>
+      </itemize>
+    </slide>
+
+    <\slide>
+      <chapter*|Vectors>
+
+      <\itemize>
+        <item>Global vector: distributed vector without ghost values
+
+        <item>Local vector: has ghost values
+
+        <item><hlink|DMCreateGlobalVector|https://petsc.org/release/docs/manualpages/DM/DMCreateGlobalVector>
+        and <hlink|DMGetGlobalVector|https://petsc.org/release/docs/manualpages/DM/DMGetGlobalVector>
+
+        <item><hlink|DMCreateLocalVector|https://petsc.org/release/docs/manualpages/DM/DMCreateLocalVector>
+        and <hlink|DMGetLocalVector|https://petsc.org/release/docs/manualpages/DM/DMGetLocalVector>
+
+        <item><hlink|VecSetValues|https://petsc.org/release/docs/manualpages/Vec/VecSetValues>
+
+        <item><hlink|VecAssemblyBegin|https://petsc.org/release/docs/manualpages/Vec/VecAssemblyBegin>
+        and <hlink|VecAssemblyEnd|https://petsc.org/release/docs/manualpages/Vec/VecAssemblyEnd>
+      </itemize>
+    </slide>
+
+    <\slide>
+      <chapter*|Arrays from Vectors>
+
+      <\itemize>
+        <item>Useful for working with Cartesian/structured grids
+
+        <item><hlink|VecGetArray|https://petsc.org/release/manualpages/Vec/VecGetArray/>
+        and <hlink|VecRestoreArray|https://petsc.org/release/manualpages/Vec/VecRestoreArray/>
+
+        <item><hlink|VecGetArrayRead|https://petsc.org/release/manualpages/Vec/VecGetArrayRead/>
+        and <hlink|VecRestoreArrayRead|https://petsc.org/release/manualpages/Vec/VecRestoreArrayRead/>
+
+        <item><hlink|VecPlaceArray|https://petsc.org/release/manualpages/Vec/VecPlaceArray/>
+
+        <item><hlink|DMDAVecGetArrayDOF|https://petsc.org/release/manualpages/DMDA/DMDAVecGetArrayDOF/>
+        and <hlink|DMDAVecRestoreArrayDOF|https://petsc.org/release/manualpages/DMDA/DMDAVecRestoreArrayDOF/>
+
+        <item><hlink|DMDAVecGetArrayDOFRead|https://petsc.org/release/manualpages/DMDA/DMDAVecGetArrayDOFRead/>
+        and <hlink|DMDAVecRestoreArrayDOFRead|https://petsc.org/release/manualpages/DMDA/DMDAVecRestoreArrayDOFRead/>
+      </itemize>
+    </slide>
+
+    <\slide>
+      <chapter*|cfdlab/petsc>
+
+      <\itemize>
+        <item>convect1d
+
+        <item>burger1d
+
+        <item>convect2d
+
+        <item>euler2d/ssprk.c
+
+        <item>euler2d/ts.c
+
+        <item>euler2d/fdweno.c
+      </itemize>
+    </slide>
+
+    <\slide>
+      <chapter*|BVP: Tutorial examples>
+
+      <\itemize>
+        <item>ex2: 2-D Poisson equation (FV, BC is not clear)
+
+        <hlink|https://petsc.org/release/src/ksp/ksp/tutorials/ex2.c.html|https://petsc.org/release/src/ksp/ksp/tutorials/ex2.c.html>
+
+        <item>ex46: 2-D Poisson equation, using DM (FV, BC is not clear)
+
+        <hlink|https://petsc.org/release/src/ksp/ksp/tutorials/ex46.c.html|https://petsc.org/release/src/ksp/ksp/tutorials/ex46.c.html>
+
+        <item>ex45: 3-D Poisson using multigrid (FD, BC is also in matrix,
+        matrix is not symmetric)
+
+        <hlink|https://petsc.org/release/src/ksp/ksp/tutorials/ex45.c.html|https://petsc.org/release/src/ksp/ksp/tutorials/ex45.c.html>
+
+        <item>ex50: Poisson with Neumann bc (FV)
+
+        <hlink|https://petsc.org/release/src/ksp/ksp/tutorials/ex50.c.html|https://petsc.org/release/src/ksp/ksp/tutorials/ex50.c.html>
+
+        <item>ex29: Poisson with Dirichlet or Neumann bc (FD)
+
+        <hlink|https://petsc.org/release/src/ksp/ksp/tutorials/ex29.c.html|https://petsc.org/release/src/ksp/ksp/tutorials/ex29.c.html>
+
+        <item>ex32: Poisson with Neumann bc (FV)
+
+        <hlink|https://petsc.org/release/src/ksp/ksp/tutorials/ex32.c.html|https://petsc.org/release/src/ksp/ksp/tutorials/ex32.c.html>
+      </itemize>
+    </slide>
+
+    <\slide>
+      <chapter*|ex2>
+
+      Finite difference method
+
+      <\equation*>
+        -<around*|[|<frac|u<rsub|i-1,j>-2u<rsub|i,j>+u<rsub|i+1,j>|h<rsup|2>>+<frac|u<rsub|i,j-1>-2u<rsub|i,j>+u<rsub|i,j+1>|h<rsup|2>>|]>=f<rsub|i,j>
+      </equation*>
+
+      and rearranging
+
+      <\equation*>
+        -u<rsub|i-1,j>-u<rsub|i+1,j>-u<rsub|i,j-1>-u<rsub|i,j+1>+4u<rsub|i,j>=h<rsup|2>f<rsub|i,j>
+      </equation*>
+
+      Let
+
+      <\equation*>
+        Ii=<text|one-d numbering (matrix row index)>=n i+j
+      </equation*>
     </slide>
 
     \;
@@ -300,12 +610,23 @@
 <\references>
   <\collection>
     <associate|auto-1|<tuple|?|2>>
+    <associate|auto-10|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
+    <associate|auto-11|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
+    <associate|auto-12|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
+    <associate|auto-13|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
+    <associate|auto-14|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
+    <associate|auto-15|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
+    <associate|auto-16|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
+    <associate|auto-17|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
+    <associate|auto-18|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
     <associate|auto-2|<tuple|?|3>>
     <associate|auto-3|<tuple|?|4>>
-    <associate|auto-4|<tuple|?|?>>
-    <associate|auto-5|<tuple|?|?>>
-    <associate|auto-6|<tuple|?|?>>
-    <associate|auto-7|<tuple|?|?>>
+    <associate|auto-4|<tuple|?|5>>
+    <associate|auto-5|<tuple|<with|mode|<quote|math>|\<bullet\>>|6>>
+    <associate|auto-6|<tuple|<with|mode|<quote|math>|\<bullet\>>|7>>
+    <associate|auto-7|<tuple|<with|mode|<quote|math>|\<bullet\>>|8>>
+    <associate|auto-8|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
+    <associate|auto-9|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
   </collection>
 </references>
 
@@ -317,12 +638,28 @@
       <no-break><pageref|auto-1><vspace|1fn>
 
       <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|integrate1:
-      blocking send/recv> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      blocking version> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-2><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|integrate2:
+      non-blocking version> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-3><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|integrate3:
+      using reduction> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-4><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|Linear
+      advection> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-5><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|Poisson
+      equation> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-6><vspace|1fn>
 
       <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|PETSc
       resources> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-3><vspace|1fn>
+      <no-break><pageref|auto-7><vspace|1fn>
     </associate>
   </collection>
 </auxiliary>
