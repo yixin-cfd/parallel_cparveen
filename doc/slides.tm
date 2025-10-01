@@ -121,7 +121,8 @@
     <\slide>
       <chapter*|MPI: Hello, World !>
 
-      Compile the code
+      Every MPI program must begin with a call <verbatim|MPI_Init>. Compile
+      the code
 
       <\shell-code>
         <\itemize>
@@ -133,17 +134,13 @@
         </itemize>
       </shell-code>
 
-      If you have a 4-core CPU, run like this
-
-      <\shell-code>
-        <itemize|mpirun -np 4 hello>
-      </shell-code>
-
       <verbatim|mpicc>, <verbatim|mpif90>, etc. are just wrappers to the
       compiler; to see actual command
 
       <\shell-code>
-        mpicc -show
+        mpicc \ -show
+
+        mpif90 -show
       </shell-code>
 
       You can also compile without the wrappers like this
@@ -152,8 +149,47 @@
         cc -I/opt/spack/include -o hello hello.c -lmpi -L/opt/spack/lib
       </shell-code>
 
-      Here, I assumed that mpi is installed in directory
+      Here, I assumed that mpi is installed in the directory
       <verbatim|/opt/spack>.
+
+      If you have a 4-core CPU, run like this
+
+      <\shell-code>
+        <\itemize>
+          mpirun -np 4 hello
+
+          mpirun -n \ 4 hello
+        </itemize>
+      </shell-code>
+
+      <verbatim|mpirun> essentially spawns the same program <verbatim|hello>
+      on 4 different hosts. On a multi-core CPU, each core will be treated as
+      a host on which an independent process can be launched.
+
+      If you have several computers connected via some network, then you may
+      need to specify the list of hosts, e.g., create a file called
+      <verbatim|hosts.txt> containing hostname/IP number and number of
+      processes allowed per host
+
+      <\shell-code>
+        node0 slots=16 # we have 16 cores
+
+        node1 slots=16 # we have 16 cores
+      </shell-code>
+
+      then run as
+
+      <\shell-code>
+        <\itemize>
+          mpirun -np 32 -hostfile /path/to/hosts.txt hello
+        </itemize>
+      </shell-code>
+
+      Usually, on parallel clusters, there is some job schedular (PBS, Slurm,
+      etc.) which manages the allocation of hosts and the user does not have
+      to worry about this.
+
+      \;
     </slide>
 
     <\slide>
@@ -260,6 +296,36 @@
 
       To update solution <math|u<rsub|j>> we need the stencil values
       <math|<around*|{|j-1,j,j+1|}>>.
+
+      Divide the grid into equal sized partitions each with <math|n<rsub|1>>
+      points
+
+      <\equation*>
+        n<rsub|1>=<around*|\<lfloor\>|<frac|n|size>|\<rfloor\>>,<space|2em>size=<text|total
+        number of ranks>
+      </equation*>
+
+      If size does not exactly divide <math|n>, then the last rank will have
+      less number of points
+
+      <\equation*>
+        n<rsub|1>=n-<around*|\<lfloor\>|<frac|n|size>|\<rfloor\>><around*|(|size-1|)>
+      </equation*>
+
+      Ranks are assigned sequentially from left to right, i.e.,
+      <math|0,1,2,\<ldots\>,size-1>.\ 
+
+      On each rank, we have a solution array <verbatim|u[n1+2]> and the
+      values <verbatim|u[0]> and <verbatim|u[n1+1]>, usually called
+      <with|font-series|bold|ghost values>, belong to different ranks. They
+      must be fetched using MPI functions.
+
+      For each rank, the neighbouring ranks are, due to periodicity,
+
+      <\padded-center>
+        <tabular|<tformat|<cwith|1|-1|1|-1|cell-tborder|1ln>|<cwith|1|-1|1|-1|cell-bborder|1ln>|<cwith|1|-1|1|-1|cell-lborder|1ln>|<cwith|1|-1|1|-1|cell-rborder|1ln>|<cwith|1|-1|1|-1|cell-halign|c>|<cwith|1|1|1|-1|cell-background|magenta>|<table|<row|<cell|rank>|<cell|left>|<cell|right>>|<row|<cell|<math|0>>|<cell|<math|size-1>>|<cell|<math|1>>>|<row|<cell|<math|0
+        \<less\> rank \<less\> size-1>>|<cell|<math|rank-1>>|<cell|<math|rank+1>>>|<row|<cell|<math|size-1>>|<cell|<math|size-2>>|<cell|<math|0>>>>>>
+      </padded-center>
     </slide>
 
     <\slide>
@@ -301,7 +367,7 @@
 
         ./hello
 
-        mpirun -n 4 ./hello
+        mpirun \ -n 4 ./hello
 
         mpiexec -n 4 ./hello
       </shell-code>
@@ -610,23 +676,23 @@
 <\references>
   <\collection>
     <associate|auto-1|<tuple|?|2>>
-    <associate|auto-10|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
-    <associate|auto-11|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
-    <associate|auto-12|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
-    <associate|auto-13|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
-    <associate|auto-14|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
-    <associate|auto-15|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
-    <associate|auto-16|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
-    <associate|auto-17|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
-    <associate|auto-18|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
+    <associate|auto-10|<tuple|<with|mode|<quote|math>|\<bullet\>>|11>>
+    <associate|auto-11|<tuple|<with|mode|<quote|math>|\<bullet\>>|12>>
+    <associate|auto-12|<tuple|<with|mode|<quote|math>|\<bullet\>>|13>>
+    <associate|auto-13|<tuple|<with|mode|<quote|math>|\<bullet\>>|14>>
+    <associate|auto-14|<tuple|<with|mode|<quote|math>|\<bullet\>>|15>>
+    <associate|auto-15|<tuple|<with|mode|<quote|math>|\<bullet\>>|16>>
+    <associate|auto-16|<tuple|<with|mode|<quote|math>|\<bullet\>>|17>>
+    <associate|auto-17|<tuple|<with|mode|<quote|math>|\<bullet\>>|18>>
+    <associate|auto-18|<tuple|<with|mode|<quote|math>|\<bullet\>>|19>>
     <associate|auto-2|<tuple|?|3>>
     <associate|auto-3|<tuple|?|4>>
     <associate|auto-4|<tuple|?|5>>
     <associate|auto-5|<tuple|<with|mode|<quote|math>|\<bullet\>>|6>>
     <associate|auto-6|<tuple|<with|mode|<quote|math>|\<bullet\>>|7>>
     <associate|auto-7|<tuple|<with|mode|<quote|math>|\<bullet\>>|8>>
-    <associate|auto-8|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
-    <associate|auto-9|<tuple|<with|mode|<quote|math>|\<bullet\>>|?>>
+    <associate|auto-8|<tuple|<with|mode|<quote|math>|\<bullet\>>|9>>
+    <associate|auto-9|<tuple|<with|mode|<quote|math>|\<bullet\>>|10>>
   </collection>
 </references>
 
@@ -660,6 +726,50 @@
       <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|PETSc
       resources> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-7><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|parallel/petsc/hello.c>
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-8><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|Variable
+      types> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-9><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|Printing>
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-10><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|p4pdes/c/ch1/e.c>
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-11><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|Creating
+      DMDA> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-12><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|DMDA
+      info> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-13><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|Vectors>
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-14><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|Arrays
+      from Vectors> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-15><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|cfdlab/petsc>
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-16><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|BVP:
+      Tutorial examples> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-17><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|ex2>
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-18><vspace|1fn>
     </associate>
   </collection>
 </auxiliary>
