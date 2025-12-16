@@ -561,11 +561,11 @@
 
         <hlink|https://petsc.org/release/src/ksp/ksp/tutorials/ex50.c.html|https://petsc.org/release/src/ksp/ksp/tutorials/ex50.c.html>
 
-        <item>ex29: Poisson with Dirichlet or Neumann bc (FD)
+        <item>ex29: Poisson with Dirichlet or Neumann bc, multigrid (FD)
 
         <hlink|https://petsc.org/release/src/ksp/ksp/tutorials/ex29.c.html|https://petsc.org/release/src/ksp/ksp/tutorials/ex29.c.html>
 
-        <item>ex32: Poisson with Neumann bc (FV)
+        <item>ex32: 2-D Poisson with Neumann bc, multigrid (FV)
 
         <hlink|https://petsc.org/release/src/ksp/ksp/tutorials/ex32.c.html|https://petsc.org/release/src/ksp/ksp/tutorials/ex32.c.html>
       </itemize>
@@ -591,6 +591,55 @@
       <\equation*>
         Ii=<text|one-d numbering (matrix row index)>=n i+j
       </equation*>
+    </slide>
+
+    <\slide>
+      <chapter*|Staggered grid: 1-D example>
+
+      https://petsc.org/main/src/dm/impls/stag/tutorials/ex1.c.html
+
+      The problem
+
+      <\eqnarray*>
+        <tformat|<table|<row|<cell|u<rprime|''>>|<cell|=>|<cell|f,<space|2em>0\<less\>x\<less\>1>>|<row|<cell|u<around*|(|0|)>>|<cell|=>|<cell|a>>|<row|<cell|u<around*|(|1|)>>|<cell|=>|<cell|b>>>>
+      </eqnarray*>
+
+      is written as a first order system
+
+      <\eqnarray*>
+        <tformat|<table|<row|<cell|p<rprime|'>>|<cell|=>|<cell|f>>|<row|<cell|p-u<rprime|'>>|<cell|=>|<cell|0>>>>
+      </eqnarray*>
+
+      We store <math|p> at cell-centers and <math|u> at vertices. If there
+      are <math|n> cells, then we have
+
+      <\equation*>
+        <around*|{|p<rsub|0>,p<rsub|1>,\<ldots\>,p<rsub|n-1>|}><space|2em>and<space|2em><around*|{|u<rsub|0>,u<rsub|1>,\<ldots\>,u<rsub|n>|}>
+      </equation*>
+
+      with
+
+      <\equation*>
+        u<rsub|0>=a,<space|2em>u<rsub|n>=b
+      </equation*>
+
+      The first equation is discretized as
+
+      <\equation*>
+        <frac|p<rsub|i+1>-p<rsub|i>|h>=f<rsub|i+1>,<space|2em>0\<leqslant\>i\<leqslant\>n-2
+      </equation*>
+
+      and the second
+
+      <\eqnarray*>
+        <tformat|<table|<row|<cell|u<rsub|0>>|<cell|=>|<cell|a>>|<row|<cell|p<rsub|i>-<frac|u<rsub|i+1>-u<rsub|i>|h>>|<cell|=>|<cell|0,<space|2em>0\<leqslant\>i\<leqslant\>n-1>>|<row|<cell|u<rsub|n>>|<cell|=>|<cell|b>>>>
+      </eqnarray*>
+    </slide>
+
+    <\slide>
+      <chapter*|Staggered grid: 2-D, Stokes problem>
+
+      https://petsc.org/main/src/dm/impls/stag/tutorials/ex2.c.html
     </slide>
 
     \;
@@ -676,23 +725,25 @@
 <\references>
   <\collection>
     <associate|auto-1|<tuple|?|2>>
-    <associate|auto-10|<tuple|<with|mode|<quote|math>|\<bullet\>>|11>>
-    <associate|auto-11|<tuple|<with|mode|<quote|math>|\<bullet\>>|12>>
-    <associate|auto-12|<tuple|<with|mode|<quote|math>|\<bullet\>>|13>>
-    <associate|auto-13|<tuple|<with|mode|<quote|math>|\<bullet\>>|14>>
-    <associate|auto-14|<tuple|<with|mode|<quote|math>|\<bullet\>>|15>>
-    <associate|auto-15|<tuple|<with|mode|<quote|math>|\<bullet\>>|16>>
-    <associate|auto-16|<tuple|<with|mode|<quote|math>|\<bullet\>>|17>>
-    <associate|auto-17|<tuple|<with|mode|<quote|math>|\<bullet\>>|18>>
-    <associate|auto-18|<tuple|<with|mode|<quote|math>|\<bullet\>>|19>>
-    <associate|auto-2|<tuple|?|3>>
-    <associate|auto-3|<tuple|?|4>>
-    <associate|auto-4|<tuple|?|5>>
-    <associate|auto-5|<tuple|<with|mode|<quote|math>|\<bullet\>>|6>>
-    <associate|auto-6|<tuple|<with|mode|<quote|math>|\<bullet\>>|7>>
-    <associate|auto-7|<tuple|<with|mode|<quote|math>|\<bullet\>>|8>>
-    <associate|auto-8|<tuple|<with|mode|<quote|math>|\<bullet\>>|9>>
-    <associate|auto-9|<tuple|<with|mode|<quote|math>|\<bullet\>>|10>>
+    <associate|auto-10|<tuple|<with|mode|<quote|math>|\<bullet\>>|13>>
+    <associate|auto-11|<tuple|<with|mode|<quote|math>|\<bullet\>>|14>>
+    <associate|auto-12|<tuple|<with|mode|<quote|math>|\<bullet\>>|15>>
+    <associate|auto-13|<tuple|<with|mode|<quote|math>|\<bullet\>>|16>>
+    <associate|auto-14|<tuple|<with|mode|<quote|math>|\<bullet\>>|17>>
+    <associate|auto-15|<tuple|<with|mode|<quote|math>|\<bullet\>>|18>>
+    <associate|auto-16|<tuple|<with|mode|<quote|math>|\<bullet\>>|19>>
+    <associate|auto-17|<tuple|<with|mode|<quote|math>|\<bullet\>>|20>>
+    <associate|auto-18|<tuple|<with|mode|<quote|math>|\<bullet\>>|21>>
+    <associate|auto-19|<tuple|<with|mode|<quote|math>|\<bullet\>>|22>>
+    <associate|auto-2|<tuple|?|4>>
+    <associate|auto-20|<tuple|<with|mode|<quote|math>|\<bullet\>>|24>>
+    <associate|auto-3|<tuple|?|5>>
+    <associate|auto-4|<tuple|?|6>>
+    <associate|auto-5|<tuple|<with|mode|<quote|math>|\<bullet\>>|7>>
+    <associate|auto-6|<tuple|<with|mode|<quote|math>|\<bullet\>>|9>>
+    <associate|auto-7|<tuple|<with|mode|<quote|math>|\<bullet\>>|10>>
+    <associate|auto-8|<tuple|<with|mode|<quote|math>|\<bullet\>>|11>>
+    <associate|auto-9|<tuple|<with|mode|<quote|math>|\<bullet\>>|12>>
   </collection>
 </references>
 
@@ -770,6 +821,14 @@
       <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|ex2>
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-18><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|Staggered
+      grid: 1-D example> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-19><vspace|1fn>
+
+      <vspace*|2fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-size|<quote|1.19>|Staggered
+      grid: 2-D, Stokes problem> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-20><vspace|1fn>
     </associate>
   </collection>
 </auxiliary>
