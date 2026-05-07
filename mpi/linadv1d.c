@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 
    xmin = 0.0; xmax = 1.0;
    dx = (xmax - xmin)/n;
-   dt = cfl * fabs(a) * dx;
+   dt = cfl * dx / fabs(a);
 
    // n1 = local grid size, excluding ghosts
    // [xmin1,xmax1] = local domain
