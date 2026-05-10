@@ -21,6 +21,8 @@ void con2prim(const double *Con, double *Prim);
 #include "2d_riemann.h"
 #elif defined(KH)
 #include "kh.h"
+#elif defined(LOWMACHKH)
+#include "lowmach_kh.h"
 #elif defined(DMR)
 #include "dmr.h"
 #else

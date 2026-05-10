@@ -45,7 +45,7 @@ The following will use 4-stage, 3-order SSPRK scheme.
 ```shell
 rm -f sol*.plt
 mpirun -np 4 ./ts -da_grid_x 100 -da_grid_y 100 -Tf 20.0 -cfl 1.8 -si 100 \
-                  -ts_type ssp -ts_ssp_type rks3 -ts_ssp_nstages 4 -ts_monitor
+                  -ts_type ssp -ts_ssp_type rks3 -ts_ssp_num_stages 4 -ts_monitor
 sh ./merge.sh
 visit -o sol*.plt
 ```
@@ -88,7 +88,7 @@ make help
 rm -f fdweno && make fdweno PROBLEM=ISENTROPIC WENO=z
 rm -rf sol*.plt
 mpirun -np 4 ./fdweno -da_grid_x 100 -da_grid_y 100 -Tf 5.0 -cfl 0.8 -si 100 \
-       -ts_type ssp -ts_ssp_type rks3 -ts_ssp_nstages 4 -ts_monitor
+       -ts_type ssp -ts_ssp_type rks3 -ts_ssp_num_stages 4 -ts_monitor
 sh ./merge.sh
 visit -o sol*.plt
 ```
@@ -101,7 +101,7 @@ Since exact solution is available, you can run a convergence test, see the scrip
 rm -f fdweno && make fdweno PROBLEM=SHOCKREF WENO=z
 rm -rf sol*.plt
 mpirun -np 4 ./fdweno -da_grid_x 200 -da_grid_y 50 -Tf 5.0 -cfl 0.8 -si 100 \
-       -ts_type ssp -ts_ssp_type rks3 -ts_ssp_nstages 4 -ts_monitor
+       -ts_type ssp -ts_ssp_type rks3 -ts_ssp_num_stages 4 -ts_monitor
 sh ./merge.sh
 visit -o sol*.plt
 ```
@@ -112,7 +112,7 @@ visit -o sol*.plt
 rm -f fdweno && make fdweno PROBLEM=SHOCKVORTEX WENO=z
 rm -rf sol*.plt
 mpirun -np 4 ./fdweno -da_grid_x 100 -da_grid_y 100 -Tf 0.5 -cfl 0.8 -si 10 \
-       -ts_type ssp -ts_ssp_type rks3 -ts_ssp_nstages 4 -ts_monitor
+       -ts_type ssp -ts_ssp_type rks3 -ts_ssp_num_stages 4 -ts_monitor
 sh ./merge.sh
 visit -o sol*.plt
 ```
@@ -123,7 +123,7 @@ visit -o sol*.plt
 rm -f fdweno && make fdweno PROBLEM=DMR WENO=z
 rm -rf sol*.plt
 mpirun -np 4 ./fdweno -da_grid_x 400 -da_grid_y 100 -Tf 0.2 -cfl 0.8 -si 100 \
-       -ts_type ssp -ts_ssp_type rks3 -ts_ssp_nstages 4 -ts_monitor
+       -ts_type ssp -ts_ssp_type rks3 -ts_ssp_num_stages 4 -ts_monitor
 sh ./merge.sh
 visit -o sol*.plt
 ```
@@ -134,7 +134,7 @@ visit -o sol*.plt
 rm -f fdweno && make fdweno PROBLEM=RIEMANN2D WENO=z
 rm -rf sol*.plt
 mpirun -np 4 ./fdweno -da_grid_x 100 -da_grid_y 100 -Tf 0.8 -cfl 0.8 -si 100 \
-       -ts_type ssp -ts_ssp_type rks3 -ts_ssp_nstages 4 -ts_monitor
+       -ts_type ssp -ts_ssp_type rks3 -ts_ssp_num_stages 4 -ts_monitor
 sh ./merge.sh
 visit -o sol*.plt
 ```
